@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Briefcase } from "lucide-react";
+import { LayoutGrid } from "lucide-react";
 
 const footerLinks = {
   "For Job Seekers": [
@@ -27,7 +27,7 @@ const footerLinks = {
 
 export default function Footer() {
   return (
-    <footer className="bg-white border-t">
+    <footer className="bg-white border-t border-gray-100">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
@@ -36,7 +36,7 @@ export default function Footer() {
               href="/"
               className="flex items-center gap-2 font-bold text-xl text-gray-900"
             >
-              <Briefcase className="h-5 w-5 text-brand" />
+              <LayoutGrid className="h-5 w-5 text-brand" />
               <span>
                 Job<span className="text-brand">Nest</span>
               </span>

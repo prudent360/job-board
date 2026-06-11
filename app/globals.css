@@ -12,9 +12,9 @@
   --font-heading: var(--font-sans);
 
   /* Brand colors */
-  --color-brand: #0A66C2;
-  --color-brand-dark: #0F2E5E;
-  --color-brand-light: #E8F4FD;
+  --color-brand: #6B4EFF;
+  --color-brand-dark: #1a1145;
+  --color-brand-light: #F3F0FF;
 
   /* shadcn tokens */
   --color-sidebar-ring: var(--sidebar-ring);
