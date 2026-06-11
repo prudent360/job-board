@@ -336,19 +336,15 @@ function JobDetail({
         </div>
 
         <div className="mt-5 flex gap-3 flex-wrap">
-          <Button
-            className="bg-brand hover:bg-brand/90 text-white font-semibold px-6"
-            asChild
+          <a
+            href={job.applyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent text-sm font-semibold transition-all bg-brand hover:bg-brand/90 text-white h-8 gap-1.5 px-6"
           >
-            <a
-              href={job.applyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <ExternalLink className="h-4 w-4 mr-2" />
-              Apply Now
-            </a>
-          </Button>
+            <ExternalLink className="h-4 w-4 mr-2" />
+            Apply Now
+          </a>
           <Button variant="outline" className="font-medium" onClick={onSave}>
             {isSaved ? (
               <BookmarkCheck className="h-4 w-4 mr-2 text-brand" />

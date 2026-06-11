@@ -280,7 +280,7 @@ export default function FeaturedJobs() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Job list — left */}
           <div className="lg:col-span-2 space-y-3 max-h-[800px] overflow-y-auto pr-1 scrollbar-thin">
-            {seedJobs.map((job) => (
+            {seedAsUnified.map((job) => (
               <JobCard
                 key={job.slug}
                 job={job}

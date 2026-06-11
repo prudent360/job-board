@@ -2,26 +2,36 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 
+// User type for the in-memory store
+type DemoUser = {
+  id: string;
+  email: string;
+  name: string;
+  password: string;
+  role: "ADMIN" | "USER";
+  image: string | null;
+};
+
 // In-memory demo users (replace with Prisma when DB is connected)
-const DEMO_USERS = [
+const DEMO_USERS: DemoUser[] = [
   {
     id: "1",
     email: "admin@jobnest.com",
     name: "Admin User",
     password: "$2a$10$xJ8Kq5Kp5bZ5Z5Z5Z5Z5ZeZ5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5", // will be set on register
-    role: "ADMIN" as const,
+    role: "ADMIN",
     image: null,
   },
 ];
 
 // Simple in-memory user store for demo (no DB required)
-const users = [...DEMO_USERS];
+const users: DemoUser[] = [...DEMO_USERS];
 
 export function getUsers() {
   return users;
 }
 
-export function addUser(user: typeof DEMO_USERS[0]) {
+export function addUser(user: DemoUser) {
   users.push(user);
 }
 
@@ -62,15 +72,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as { role: string }).role;
+        token.role = (user as unknown as Record<string, unknown>).role as string;
         token.id = user.id;
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
-        (session.user as { role: string }).role = token.role as string;
-        (session.user as { id: string }).id = token.id as string;
+        const u = session.user as unknown as Record<string, unknown>;
+        u.role = token.role as string;
+        u.id = token.id as string;
       }
       return session;
     },

@@ -47,7 +47,9 @@ export class USAJobsAdapter implements JobAdapter {
         const match = item.MatchedObjectDescriptor as Record<string, unknown>;
         const title = String(match?.PositionTitle || "");
         const company = String(match?.OrganizationName || match?.DepartmentName || "US Government");
-        const description = stripHtml(String(match?.QualificationSummary || match?.UserArea?.Details?.MajorDuties || ""));
+        const userArea = match?.UserArea as Record<string, unknown> | undefined;
+        const details = userArea?.Details as Record<string, unknown> | undefined;
+        const description = stripHtml(String(match?.QualificationSummary || details?.MajorDuties || ""));
         const locations = Array.isArray(match?.PositionLocation) ? match.PositionLocation : [];
         const locObj = locations[0] as Record<string, unknown> | undefined;
         const location = locObj ? String(locObj.LocationName || "") : "";
@@ -81,7 +83,7 @@ export class USAJobsAdapter implements JobAdapter {
           benefits: ["Federal benefits package", "Retirement plan", "Health insurance"],
           source: "USAJobs",
           sourceId: String(match?.PositionID || ""),
-          applyUrl: String(match?.ApplyURI?.[0] || String(match?.PositionURI || "")),
+          applyUrl: String((Array.isArray(match?.ApplyURI) ? match.ApplyURI[0] : null) || match?.PositionURI || ""),
           featured: false,
           postedAt: match?.PublicationStartDate ? String(match.PublicationStartDate) : new Date().toISOString(),
           category: inferCategory(title, tags),

@@ -83,16 +83,13 @@ function OverviewTab() {
       <div className="bg-white border border-gray-100 rounded-xl p-6">
         <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <Button
-            variant="outline"
-            className="h-auto py-4 flex flex-col items-center gap-2"
-            asChild
+          <a
+            href="/jobs"
+            className="inline-flex shrink-0 items-center justify-center rounded-lg border border-border bg-background hover:bg-muted hover:text-foreground text-sm font-medium transition-all h-auto py-4 flex flex-col items-center gap-2"
           >
-            <a href="/jobs">
-              <Briefcase className="h-5 w-5 text-brand" />
-              <span className="text-sm font-medium">Browse Jobs</span>
-            </a>
-          </Button>
+            <Briefcase className="h-5 w-5 text-brand" />
+            <span className="text-sm font-medium">Browse Jobs</span>
+          </a>
           <Button
             variant="outline"
             className="h-auto py-4 flex flex-col items-center gap-2"
@@ -155,12 +152,13 @@ function SavedJobsTab() {
         <p className="text-gray-500 mb-6 max-w-sm mx-auto">
           When you find a job you like, click the bookmark icon to save it here.
         </p>
-        <Button className="bg-brand hover:bg-brand/90 text-white" asChild>
-          <a href="/jobs">
-            <Briefcase className="h-4 w-4 mr-2" />
-            Browse Jobs
-          </a>
-        </Button>
+        <a
+          href="/jobs"
+          className="inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent text-sm font-medium transition-all bg-brand hover:bg-brand/90 text-white h-8 gap-1.5 px-2.5"
+        >
+          <Briefcase className="h-4 w-4 mr-2" />
+          Browse Jobs
+        </a>
       </div>
     </div>
   );

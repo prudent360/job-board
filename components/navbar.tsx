@@ -135,34 +135,26 @@ export default function Navbar() {
             </div>
           ) : (
             <>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white/80 hover:text-white hover:bg-white/10"
-                asChild
+              <Link
+                href="/auth/login"
+                className="inline-flex shrink-0 items-center justify-center rounded-lg text-sm font-medium transition-all text-white/80 hover:text-white hover:bg-white/10 h-7 gap-1 px-2.5"
               >
-                <Link href="/auth/login">Sign In</Link>
-              </Button>
-              <Button
-                size="sm"
-                className="bg-sky-500 hover:bg-sky-400 text-white font-semibold"
-                asChild
+                Sign In
+              </Link>
+              <Link
+                href="/auth/register"
+                className="inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent text-sm font-semibold transition-all bg-sky-500 hover:bg-sky-400 text-white h-7 gap-1 px-2.5"
               >
-                <Link href="/auth/register">Get Started</Link>
-              </Button>
+                Get Started
+              </Link>
             </>
           )}
         </div>
 
         {/* Mobile Menu */}
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild className="md:hidden">
-            <button
-              className="inline-flex items-center justify-center h-10 w-10 rounded-md text-white hover:bg-white/10 transition-colors"
-              aria-label="Open menu"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
+          <SheetTrigger className="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-md text-white hover:bg-white/10 transition-colors" aria-label="Open menu">
+            <Menu className="h-5 w-5" />
           </SheetTrigger>
           <SheetContent side="right" className="w-72 bg-brand-dark border-none">
             <nav className="flex flex-col gap-2 mt-8">
@@ -220,23 +212,20 @@ export default function Navbar() {
                 </Button>
               ) : (
                 <>
-                  <Button
-                    variant="ghost"
-                    className="justify-start text-white/80 hover:text-white hover:bg-white/10"
-                    asChild
+                  <Link
+                    href="/auth/login"
+                    onClick={() => setOpen(false)}
+                    className="inline-flex shrink-0 items-center justify-start rounded-lg text-sm font-medium transition-all text-white/80 hover:text-white hover:bg-white/10 h-8 gap-1.5 px-2.5 w-full"
                   >
-                    <Link href="/auth/login" onClick={() => setOpen(false)}>
-                      Sign In
-                    </Link>
-                  </Button>
-                  <Button
-                    className="bg-sky-500 hover:bg-sky-400 text-white font-semibold"
-                    asChild
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/auth/register"
+                    onClick={() => setOpen(false)}
+                    className="inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent text-sm font-semibold transition-all bg-sky-500 hover:bg-sky-400 text-white h-8 gap-1.5 px-2.5 w-full"
                   >
-                    <Link href="/auth/register" onClick={() => setOpen(false)}>
-                      Get Started
-                    </Link>
-                  </Button>
+                    Get Started
+                  </Link>
                 </>
               )}
             </nav>
