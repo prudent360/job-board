@@ -26,12 +26,12 @@ export default function HeroSection() {
 
       <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-16 pb-12 sm:pt-24 sm:pb-16 text-center">
         <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold tracking-tight leading-[1.15] text-gray-900">
-          The #1 job board for
+          Find your next
           <br />
-          <span className="text-brand">freelance jobs</span>
+          <span className="text-brand">dream job</span>
         </h1>
         <p className="mt-5 text-base sm:text-lg text-gray-500 max-w-xl mx-auto leading-relaxed">
-          Looking for a job? Browse latest freelance job openings to view &amp; apply!
+          Discover opportunities from top companies worldwide. Search, filter, and apply — all in one place.
         </p>
 
         {/* Search Bar */}
@@ -46,7 +46,7 @@ export default function HeroSection() {
                 type="text"
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-                placeholder="Product/UI/UX designer"
+                placeholder="Job title, keyword, or company"
                 className="w-full text-sm text-gray-900 placeholder:text-gray-400 outline-none bg-transparent"
                 id="hero-search-keyword"
               />
@@ -67,7 +67,7 @@ export default function HeroSection() {
                 type="text"
                 value={loc}
                 onChange={(e) => setLoc(e.target.value)}
-                placeholder="Country or timezone"
+                placeholder="City, country, or remote"
                 className="w-full text-sm text-gray-900 placeholder:text-gray-400 outline-none bg-transparent"
                 id="hero-search-location"
               />

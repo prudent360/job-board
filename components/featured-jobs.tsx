@@ -7,10 +7,8 @@ import {
   MapPin,
   Clock,
   DollarSign,
-  ExternalLink,
   ArrowRight,
-  CheckCircle2,
-  Users,
+  Briefcase,
   MoreHorizontal,
 } from "lucide-react";
 import Link from "next/link";
@@ -43,16 +41,15 @@ function JobCard({ job }: { job: UnifiedJob }) {
             </h3>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <span className="text-sm text-gray-500">{job.company}</span>
-              <span className="flex items-center gap-0.5 text-xs text-brand">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                Verified
-              </span>
+              <span className="text-gray-300">·</span>
               <span className="flex items-center gap-1 text-xs text-gray-400">
                 <MapPin className="h-3 w-3" />
-                {job.arrangement}
+                {job.location}
               </span>
-              <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">
-                {Math.floor(Math.random() * 80 + 10)} applicants
+              <span className="text-gray-300">·</span>
+              <span className="flex items-center gap-1 text-xs text-gray-400">
+                <Briefcase className="h-3 w-3" />
+                {job.type.replace("_", "-")}
               </span>
             </div>
           </div>
@@ -89,9 +86,9 @@ function JobCard({ job }: { job: UnifiedJob }) {
               {job.salary}
             </span>
           )}
-          <span className="flex items-center gap-1">
-            <Users className="h-3.5 w-3.5" />
-            {Math.floor(Math.random() * 30 + 5)} proposals
+          <span className="flex items-center gap-1 text-xs text-gray-400">
+            <Clock className="h-3.5 w-3.5" />
+            {timeAgo(job.postedAt)}
           </span>
         </div>
         <a

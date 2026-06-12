@@ -6,14 +6,16 @@ import { Badge } from "@/components/ui/badge";
 import {
   MapPin,
   DollarSign,
-  ExternalLink,
   Search,
   X,
-  CheckCircle2,
-  Users,
+  Briefcase,
+  Clock,
   MoreHorizontal,
   ChevronDown,
   RotateCcw,
+  Globe,
+  Monitor,
+  Home,
 } from "lucide-react";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { Loader2 } from "lucide-react";
@@ -23,8 +25,8 @@ import { Loader2 } from "lucide-react";
 /* ------------------------------------------------------------------ */
 
 const JOB_TYPES = [
-  { value: "FULL_TIME", label: "Full-time job" },
-  { value: "PART_TIME", label: "Part-time job" },
+  { value: "FULL_TIME", label: "Full-time" },
+  { value: "PART_TIME", label: "Part-time" },
   { value: "CONTRACT", label: "Contract" },
   { value: "INTERNSHIP", label: "Internship" },
   { value: "FREELANCE", label: "Freelance" },
@@ -33,10 +35,16 @@ const JOB_TYPES = [
 const EXPERIENCE_LEVELS = [
   { value: "ENTRY", label: "Entry level" },
   { value: "JUNIOR", label: "Junior" },
-  { value: "MID", label: "Intermediate" },
+  { value: "MID", label: "Mid-level" },
   { value: "SENIOR", label: "Senior" },
   { value: "LEAD", label: "Lead" },
-  { value: "EXECUTIVE", label: "Expert" },
+  { value: "EXECUTIVE", label: "Executive" },
+];
+
+const ARRANGEMENTS = [
+  { value: "REMOTE", label: "Remote", icon: Globe },
+  { value: "HYBRID", label: "Hybrid", icon: Home },
+  { value: "ONSITE", label: "On-site", icon: Monitor },
 ];
 
 const CATEGORIES = [
@@ -94,16 +102,15 @@ function JobCard({ job }: { job: UnifiedJob }) {
             </h3>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <span className="text-sm text-gray-500">{job.company}</span>
-              <span className="flex items-center gap-0.5 text-xs text-brand">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                Verified
-              </span>
+              <span className="text-gray-300">·</span>
               <span className="flex items-center gap-1 text-xs text-gray-400">
                 <MapPin className="h-3 w-3" />
-                {job.arrangement}
+                {job.location}
               </span>
-              <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">
-                {Math.floor(Math.random() * 80 + 10)} applicants
+              <span className="text-gray-300">·</span>
+              <span className="flex items-center gap-1 text-xs text-gray-400">
+                <Briefcase className="h-3 w-3" />
+                {job.type.replace("_", "-")}
               </span>
             </div>
           </div>
@@ -140,9 +147,9 @@ function JobCard({ job }: { job: UnifiedJob }) {
               {job.salary}
             </span>
           )}
-          <span className="flex items-center gap-1">
-            <Users className="h-3.5 w-3.5" />
-            {Math.floor(Math.random() * 30 + 5)} proposals
+          <span className="flex items-center gap-1 text-xs text-gray-400">
+            <Clock className="h-3.5 w-3.5" />
+            {timeAgo(job.postedAt)}
           </span>
         </div>
         <a
@@ -169,6 +176,8 @@ function FilterSidebar({
   onToggleExperience,
   selectedTypes,
   onToggleType,
+  selectedArrangements,
+  onToggleArrangement,
   onReset,
   jobCounts,
 }: {
@@ -178,8 +187,14 @@ function FilterSidebar({
   onToggleExperience: (val: string) => void;
   selectedTypes: string[];
   onToggleType: (val: string) => void;
+  selectedArrangements: string[];
+  onToggleArrangement: (val: string) => void;
   onReset: () => void;
-  jobCounts: { experience: Record<string, number>; type: Record<string, number> };
+  jobCounts: {
+    experience: Record<string, number>;
+    type: Record<string, number>;
+    arrangement: Record<string, number>;
+  };
 }) {
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-5 sticky top-20">
@@ -222,6 +237,7 @@ function FilterSidebar({
             <label
               key={level.value}
               className="flex items-center justify-between cursor-pointer group"
+              onClick={() => onToggleExperience(level.value)}
             >
               <div className="flex items-center gap-2.5">
                 <div
@@ -230,7 +246,6 @@ function FilterSidebar({
                       ? "bg-brand border-brand"
                       : "border-gray-300 group-hover:border-gray-400"
                   }`}
-                  onClick={() => onToggleExperience(level.value)}
                 >
                   {selectedExperience.includes(level.value) && (
                     <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -256,6 +271,7 @@ function FilterSidebar({
             <label
               key={type.value}
               className="flex items-center justify-between cursor-pointer group"
+              onClick={() => onToggleType(type.value)}
             >
               <div className="flex items-center gap-2.5">
                 <div
@@ -264,7 +280,6 @@ function FilterSidebar({
                       ? "bg-brand border-brand"
                       : "border-gray-300 group-hover:border-gray-400"
                   }`}
-                  onClick={() => onToggleType(type.value)}
                 >
                   {selectedTypes.includes(type.value) && (
                     <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -282,14 +297,41 @@ function FilterSidebar({
         </div>
       </div>
 
-      {/* Price Range */}
+      {/* Work Arrangement */}
       <div>
-        <h4 className="text-sm font-semibold text-gray-900 mb-3">Price range</h4>
-        <input
-          type="text"
-          placeholder="Enter fixed price"
-          className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 outline-none focus:border-brand bg-white placeholder:text-gray-400"
-        />
+        <h4 className="text-sm font-semibold text-gray-900 mb-3">Work arrangement</h4>
+        <div className="space-y-2.5">
+          {ARRANGEMENTS.map((arr) => (
+            <label
+              key={arr.value}
+              className="flex items-center justify-between cursor-pointer group"
+              onClick={() => onToggleArrangement(arr.value)}
+            >
+              <div className="flex items-center gap-2.5">
+                <div
+                  className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
+                    selectedArrangements.includes(arr.value)
+                      ? "bg-brand border-brand"
+                      : "border-gray-300 group-hover:border-gray-400"
+                  }`}
+                >
+                  {selectedArrangements.includes(arr.value) && (
+                    <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+                <span className="text-sm text-gray-600 flex items-center gap-1.5">
+                  <arr.icon className="h-3.5 w-3.5 text-gray-400" />
+                  {arr.label}
+                </span>
+              </div>
+              <span className="text-xs text-gray-400 font-medium">
+                {jobCounts.arrangement[arr.value] || 0}
+              </span>
+            </label>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -299,7 +341,6 @@ function FilterSidebar({
 /*  Main Search Page Component                                         */
 /* ------------------------------------------------------------------ */
 
-// Convert seed data to UnifiedJob shape for initial render
 const seedAsUnified: UnifiedJob[] = seedJobs.map((j) => ({
   ...j,
   id: `seed-${j.slug}`,
@@ -307,17 +348,16 @@ const seedAsUnified: UnifiedJob[] = seedJobs.map((j) => ({
 }));
 
 export default function JobSearchPage() {
-  // Search & filter state
   const [keyword, setKeyword] = useState("");
   const [location, setLocation] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedExperience, setSelectedExperience] = useState<string[]>([]);
+  const [selectedArrangements, setSelectedArrangements] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("newest");
   const [allJobs, setAllJobs] = useState<UnifiedJob[]>(seedAsUnified);
   const [loading, setLoading] = useState(false);
 
-  // Fetch from aggregator API on mount
   useEffect(() => {
     const fetchJobs = async () => {
       setLoading(true);
@@ -338,7 +378,6 @@ export default function JobSearchPage() {
     fetchJobs();
   }, []);
 
-  // Toggle helpers
   const toggleFilter = useCallback(
     (value: string, selected: string[], setter: React.Dispatch<React.SetStateAction<string[]>>) => {
       setter(selected.includes(value) ? selected.filter((v) => v !== value) : [...selected, value]);
@@ -352,13 +391,12 @@ export default function JobSearchPage() {
     setSelectedCategory("All Categories");
     setSelectedTypes([]);
     setSelectedExperience([]);
+    setSelectedArrangements([]);
   };
 
-  // Filtered & sorted jobs
   const filteredJobs = useMemo(() => {
     let jobs = [...allJobs];
 
-    // Keyword
     if (keyword.trim()) {
       const q = keyword.toLowerCase();
       jobs = jobs.filter(
@@ -369,28 +407,27 @@ export default function JobSearchPage() {
       );
     }
 
-    // Location
     if (location.trim()) {
       const loc = location.toLowerCase();
       jobs = jobs.filter((j) => j.location.toLowerCase().includes(loc));
     }
 
-    // Category
     if (selectedCategory !== "All Categories") {
       jobs = jobs.filter((j) => j.category === selectedCategory);
     }
 
-    // Type
     if (selectedTypes.length > 0) {
       jobs = jobs.filter((j) => selectedTypes.includes(j.type));
     }
 
-    // Experience
     if (selectedExperience.length > 0) {
       jobs = jobs.filter((j) => selectedExperience.includes(j.experience));
     }
 
-    // Sort
+    if (selectedArrangements.length > 0) {
+      jobs = jobs.filter((j) => selectedArrangements.includes(j.arrangement));
+    }
+
     if (sortBy === "newest") {
       jobs.sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
     } else if (sortBy === "salary-high") {
@@ -400,17 +437,18 @@ export default function JobSearchPage() {
     }
 
     return jobs;
-  }, [keyword, location, selectedCategory, selectedTypes, selectedExperience, sortBy, allJobs]);
+  }, [keyword, location, selectedCategory, selectedTypes, selectedExperience, selectedArrangements, sortBy, allJobs]);
 
-  // Counts for sidebar
   const jobCounts = useMemo(() => {
     const experience: Record<string, number> = {};
     const type: Record<string, number> = {};
+    const arrangement: Record<string, number> = {};
     allJobs.forEach((j) => {
       experience[j.experience] = (experience[j.experience] || 0) + 1;
       type[j.type] = (type[j.type] || 0) + 1;
+      arrangement[j.arrangement] = (arrangement[j.arrangement] || 0) + 1;
     });
-    return { experience, type };
+    return { experience, type, arrangement };
   }, [allJobs]);
 
   return (
@@ -423,12 +461,12 @@ export default function JobSearchPage() {
 
         <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14 text-center">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.15] text-gray-900">
-            The #1 job board for
+            Find your next
             <br />
-            <span className="text-brand">freelance jobs</span>
+            <span className="text-brand">dream job</span>
           </h1>
           <p className="mt-4 text-base text-gray-500 max-w-xl mx-auto">
-            Looking for a job? Browse latest freelance job openings to view &amp; apply!
+            Discover opportunities from top companies worldwide. Search, filter, and apply — all in one place.
           </p>
 
           {/* Search bar */}
@@ -440,7 +478,7 @@ export default function JobSearchPage() {
                   type="text"
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
-                  placeholder="Product/UI/UX designer"
+                  placeholder="Job title, keyword, or company"
                   className="w-full text-sm text-gray-900 placeholder:text-gray-400 outline-none bg-transparent"
                 />
                 {keyword && (
@@ -455,7 +493,7 @@ export default function JobSearchPage() {
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Country or timezone"
+                  placeholder="City, country, or remote"
                   className="w-full text-sm text-gray-900 placeholder:text-gray-400 outline-none bg-transparent"
                 />
                 {location && (
@@ -475,9 +513,8 @@ export default function JobSearchPage() {
       {/* Results */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-16">
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* Job list — left */}
+          {/* Job list */}
           <div className="flex-1 min-w-0">
-            {/* Results header */}
             <div className="flex items-center justify-between mb-5">
               <p className="text-sm text-gray-500">
                 {loading ? (
@@ -511,7 +548,6 @@ export default function JobSearchPage() {
               </div>
             </div>
 
-            {/* Job cards */}
             {filteredJobs.length === 0 ? (
               <div className="text-center py-20 bg-white rounded-xl border border-gray-100">
                 <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
@@ -537,7 +573,7 @@ export default function JobSearchPage() {
             )}
           </div>
 
-          {/* Filter sidebar — right */}
+          {/* Filter sidebar */}
           <div className="w-full lg:w-72 shrink-0 order-first lg:order-last">
             <FilterSidebar
               selectedCategory={selectedCategory}
@@ -546,6 +582,8 @@ export default function JobSearchPage() {
               onToggleExperience={(v) => toggleFilter(v, selectedExperience, setSelectedExperience)}
               selectedTypes={selectedTypes}
               onToggleType={(v) => toggleFilter(v, selectedTypes, setSelectedTypes)}
+              selectedArrangements={selectedArrangements}
+              onToggleArrangement={(v) => toggleFilter(v, selectedArrangements, setSelectedArrangements)}
               onReset={clearAllFilters}
               jobCounts={jobCounts}
             />
