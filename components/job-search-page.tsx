@@ -12,13 +12,18 @@ import {
   Clock,
   MoreHorizontal,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   RotateCcw,
   Globe,
   Monitor,
   Home,
 } from "lucide-react";
+import Link from "next/link";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+
+const JOBS_PER_PAGE = 10;
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
@@ -87,9 +92,9 @@ function timeAgo(dateStr: string) {
 function JobCard({ job }: { job: UnifiedJob }) {
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-5 sm:p-6 hover:border-gray-200 hover:shadow-md transition-all duration-200 group">
-      {/* Header */}
+      {/* Header — clickable */}
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3.5">
+        <Link href={`/jobs/${job.slug}`} className="flex items-start gap-3.5">
           <div
             className="w-11 h-11 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0"
             style={{ backgroundColor: job.companyColor }}
@@ -114,16 +119,18 @@ function JobCard({ job }: { job: UnifiedJob }) {
               </span>
             </div>
           </div>
-        </div>
+        </Link>
         <button className="text-gray-300 hover:text-gray-500 transition-colors shrink-0 mt-1">
           <MoreHorizontal className="h-5 w-5" />
         </button>
       </div>
 
       {/* Description */}
-      <p className="mt-4 text-sm text-gray-500 leading-relaxed line-clamp-2">
-        {job.description.split("\n")[0]}
-      </p>
+      <Link href={`/jobs/${job.slug}`}>
+        <p className="mt-4 text-sm text-gray-500 leading-relaxed line-clamp-2">
+          {job.description.split("\n")[0]}
+        </p>
+      </Link>
 
       {/* Tags */}
       <div className="mt-4 flex items-center gap-1.5 flex-wrap">
@@ -152,15 +159,89 @@ function JobCard({ job }: { job: UnifiedJob }) {
             {timeAgo(job.postedAt)}
           </span>
         </div>
-        <a
-          href={job.applyUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link
+          href={`/jobs/${job.slug}`}
           className="inline-flex items-center justify-center rounded-lg text-sm font-semibold transition-all bg-brand hover:bg-brand/90 text-white h-9 px-5"
         >
-          Apply now
-        </a>
+          View details
+        </Link>
       </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Pagination                                                         */
+/* ------------------------------------------------------------------ */
+
+function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) {
+  if (totalPages <= 1) return null;
+
+  const getVisiblePages = () => {
+    const pages: (number | "...")[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (currentPage > 3) pages.push("...");
+      for (
+        let i = Math.max(2, currentPage - 1);
+        i <= Math.min(totalPages - 1, currentPage + 1);
+        i++
+      ) {
+        pages.push(i);
+      }
+      if (currentPage < totalPages - 2) pages.push("...");
+      pages.push(totalPages);
+    }
+    return pages;
+  };
+
+  return (
+    <div className="flex items-center justify-center gap-1.5 mt-8">
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+
+      {getVisiblePages().map((page, i) =>
+        page === "..." ? (
+          <span key={`dots-${i}`} className="px-2 text-gray-400 text-sm">
+            …
+          </span>
+        ) : (
+          <button
+            key={page}
+            onClick={() => onPageChange(page)}
+            className={`inline-flex items-center justify-center h-9 w-9 rounded-lg text-sm font-medium transition-colors ${
+              currentPage === page
+                ? "bg-brand text-white"
+                : "border border-gray-200 text-gray-700 hover:bg-gray-50"
+            }`}
+          >
+            {page}
+          </button>
+        )
+      )}
+
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </button>
     </div>
   );
 }
@@ -357,6 +438,7 @@ export default function JobSearchPage() {
   const [sortBy, setSortBy] = useState("newest");
   const [allJobs, setAllJobs] = useState<UnifiedJob[]>(seedAsUnified);
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -385,6 +467,11 @@ export default function JobSearchPage() {
     []
   );
 
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [keyword, location, selectedCategory, selectedTypes, selectedExperience, selectedArrangements, sortBy]);
+
   const clearAllFilters = () => {
     setKeyword("");
     setLocation("");
@@ -392,6 +479,7 @@ export default function JobSearchPage() {
     setSelectedTypes([]);
     setSelectedExperience([]);
     setSelectedArrangements([]);
+    setCurrentPage(1);
   };
 
   const filteredJobs = useMemo(() => {
@@ -515,62 +603,90 @@ export default function JobSearchPage() {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Job list */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-5">
-              <p className="text-sm text-gray-500">
-                {loading ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-brand" />
-                    Fetching jobs from sources...
-                  </span>
-                ) : (
-                  <>
-                    Showing results (
-                    <span className="font-semibold text-gray-900">
-                      {filteredJobs.length}
-                    </span>
-                    )
-                  </>
-                )}
-              </p>
-              <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                Sort:{" "}
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="font-medium text-gray-900 bg-transparent outline-none cursor-pointer"
-                >
-                  {SORT_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            {(() => {
+              const totalPages = Math.ceil(filteredJobs.length / JOBS_PER_PAGE);
+              const paginatedJobs = filteredJobs.slice(
+                (currentPage - 1) * JOBS_PER_PAGE,
+                currentPage * JOBS_PER_PAGE
+              );
+              const startIdx = (currentPage - 1) * JOBS_PER_PAGE + 1;
+              const endIdx = Math.min(currentPage * JOBS_PER_PAGE, filteredJobs.length);
 
-            {filteredJobs.length === 0 ? (
-              <div className="text-center py-20 bg-white rounded-xl border border-gray-100">
-                <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  No jobs found
-                </h3>
-                <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                  Try adjusting your search or filters to find more opportunities.
-                </p>
-                <button
-                  onClick={clearAllFilters}
-                  className="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 h-9 px-5"
-                >
-                  Clear all filters
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredJobs.map((job) => (
-                  <JobCard key={job.slug} job={job} />
-                ))}
-              </div>
-            )}
+              return (
+                <>
+                  <div className="flex items-center justify-between mb-5">
+                    <p className="text-sm text-gray-500">
+                      {loading ? (
+                        <span className="flex items-center gap-2">
+                          <Loader2 className="h-3.5 w-3.5 animate-spin text-brand" />
+                          Fetching jobs from sources...
+                        </span>
+                      ) : (
+                        <>
+                          Showing{" "}
+                          <span className="font-semibold text-gray-900">
+                            {startIdx}–{endIdx}
+                          </span>
+                          {" "}of{" "}
+                          <span className="font-semibold text-gray-900">
+                            {filteredJobs.length}
+                          </span>
+                          {" "}results
+                        </>
+                      )}
+                    </p>
+                    <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                      Sort:{" "}
+                      <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="font-medium text-gray-900 bg-transparent outline-none cursor-pointer"
+                      >
+                        {SORT_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {filteredJobs.length === 0 ? (
+                    <div className="text-center py-20 bg-white rounded-xl border border-gray-100">
+                      <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        No jobs found
+                      </h3>
+                      <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                        Try adjusting your search or filters to find more opportunities.
+                      </p>
+                      <button
+                        onClick={clearAllFilters}
+                        className="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 h-9 px-5"
+                      >
+                        Clear all filters
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-4">
+                        {paginatedJobs.map((job) => (
+                          <JobCard key={job.slug} job={job} />
+                        ))}
+                      </div>
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={(page) => {
+                          setCurrentPage(page);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                      />
+                    </>
+                  )}
+                </>
+              );
+            })()}
           </div>
 
           {/* Filter sidebar */}
